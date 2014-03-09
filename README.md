@@ -6,7 +6,7 @@ Diese Erweiterung legt eine extra Tabelle `tl_page_history` an und speichert bei
 Hook
 ----
 
-Über den Hook `redirectPageError404` lässt sich die Erweiterung auch mit eigenen Regeln seitenspezifische Umleitungen ergänzen.
+Über den Hook `redirectPageError404` lässt sich die Erweiterung auch mit eigenen Regeln und seitenspezifischen Umleitungen ergänzen.
 
 Beispiel:
 
