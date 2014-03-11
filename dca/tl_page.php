@@ -7,7 +7,7 @@ class tl_page_history extends Backend
 {
 	public function savePageAliasToHistory($varValue, \DataContainer $dc)
 	{
-		if ($varValue != $dc->activeRecord->alias)
+		if (($dc->activeRecord->alias != '') && ($varValue != $dc->activeRecord->alias))
 		{
 			$objPage = PageModel::findWithDetails($dc->activeRecord->id);
 

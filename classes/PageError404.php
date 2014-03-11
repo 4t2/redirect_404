@@ -10,7 +10,7 @@ namespace Lingo\Redirect;
  * PHP version 5
  * @copyright  Lingo4you 2014
  * @author     Mario Müller <http://www.lingolia.com/>
- * @version    1.0.0
+ * @version    1.0.1
  * @package    redirect_404
  * @license    http://opensource.org/licenses/lgpl-3.0.html
  */
