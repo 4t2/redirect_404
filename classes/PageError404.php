@@ -10,7 +10,7 @@ namespace Lingo\Redirect;
  * PHP version 5
  * @copyright  Lingo4you 2014
  * @author     Mario Müller <http://www.lingolia.com/>
- * @version    1.0.2
+ * @version    1.0.3
  * @package    redirect_404
  * @license    http://opensource.org/licenses/lgpl-3.0.html
  */
@@ -21,7 +21,8 @@ class PageError404 extends \Contao\PageError404
 	{
 		$strUrl = FALSE;
 		$intStatus = 301;
-		$language = FALSE;
+		$language = ($GLOBALS['TL_LANGUAGE'] != '' ? $GLOBALS['TL_LANGUAGE'] : FALSE);
+		$strArticle = NULL;
 
 		$blnProcessRequest = TRUE;
 
@@ -35,51 +36,59 @@ class PageError404 extends \Contao\PageError404
 			}
 		}
 
-		$language = ($GLOBALS['TL_LANGUAGE'] != '' ? $GLOBALS['TL_LANGUAGE'] : FALSE);
-
-		// Get the request string without the index.php fragment
-		if (\Environment::get('request') == 'index.php')
+		// only handle if $strUrl == FALSE
+		if ($strUrl === FALSE)
 		{
-			$strRequest = '';
-		}
-		else
-		{
-			list($strRequest) = explode('?', str_replace('index.php/', '', \Environment::get('request')), 2);
-		}
-
-		$strRequest = rawurldecode($strRequest);
-
-		if ($strRequest != '' && (!$GLOBALS['TL_CONFIG']['addLanguageToUrl'] || !preg_match('@^[a-z]{2}(\-[A-Z]{2})?/$@', $strRequest)))
-		{
-			$intSuffixLength = strlen($GLOBALS['TL_CONFIG']['urlSuffix']);
-
-			if ($intSuffixLength > 0)
+			// Get the request string without the index.php fragment
+			if (\Environment::get('request') == 'index.php')
 			{
-				if (substr($strRequest, -$intSuffixLength) != $GLOBALS['TL_CONFIG']['urlSuffix'])
+				$strRequest = '';
+			}
+			else
+			{
+				list($strRequest) = explode('?', str_replace('index.php/', '', \Environment::get('request')), 2);
+
+				$strRequest = rawurldecode($strRequest);
+			}
+
+			if ($strRequest != '' && (!$GLOBALS['TL_CONFIG']['addLanguageToUrl'] || !preg_match('@^[a-z]{2}(\-[A-Z]{2})?/$@', $strRequest)))
+			{
+				$intSuffixLength = strlen($GLOBALS['TL_CONFIG']['urlSuffix']);
+
+				if ($intSuffixLength > 0)
 				{
-					$blnProcessRequest = FALSE;
+					if (substr($strRequest, -$intSuffixLength) != $GLOBALS['TL_CONFIG']['urlSuffix'])
+					{
+						$blnProcessRequest = FALSE;
+					}
+
+					$strRequest = substr($strRequest, 0, -$intSuffixLength);
 				}
-
-				$strRequest = substr($strRequest, 0, -$intSuffixLength);
 			}
-		}
 
-		if ($blnProcessRequest && $GLOBALS['TL_CONFIG']['addLanguageToUrl'])
-		{
-			$arrMatches = array();
-
-			if (preg_match('@^([a-z]{2}(\-[A-Z]{2})?)/(.*)$@', $strRequest, $arrMatches))
+			if ($blnProcessRequest && $GLOBALS['TL_CONFIG']['addLanguageToUrl'])
 			{
-				$language = $arrMatches[1];
-				$strRequest = $arrMatches[3];
+				$arrMatches = array();
+
+				if (preg_match('@^([a-z]{2}(\-[A-Z]{2})?)/(.*)$@', $strRequest, $arrMatches))
+				{
+					$language = $arrMatches[1];
+					$strRequest = $arrMatches[3];
+				}
 			}
-		}
 
-		$strAlias = $strRequest;
+			if ($blnProcessRequest && preg_match('@^(.*)(/articles/.+)$@', $strRequest, $arrMatches))
+			{
+				$strRequest = $arrMatches[1];
+				$strArticle = $arrMatches[2];
+			}
 
-		if ($blnProcessRequest && !$strUrl && ($strAlias != ''))
-		{
-			$strUrl = $this->findInHistory(\Environment::get('host'), $strAlias, $language);
+			$strAlias = $strRequest;
+
+			if ($blnProcessRequest && !$strUrl && ($strAlias != ''))
+			{
+				$strUrl = $this->findInHistory(\Environment::get('host'), $strAlias, $strArticle, $language);
+			}
 		}
 
 
@@ -102,7 +111,7 @@ class PageError404 extends \Contao\PageError404
 	/**
 	 * look for the page in the history table
 	 */
-	protected function findInHistory($strDomain, $strAlias, $language = FALSE)
+	protected function findInHistory($strDomain, $strAlias, $strArticle, $language = FALSE)
 	{
 		$objDatabase = \Database::getInstance();
 
@@ -125,7 +134,7 @@ class PageError404 extends \Contao\PageError404
 			{
 				\System::log(sprintf('Found «%s» in history', $strAlias), __METHOD__, TL_GENERAL);
 
-				return \Environment::get('base') . $this->generateFrontendUrl($objPage->row(), NULL, $language);
+				return \Environment::get('base') . $this->generateFrontendUrl($objPage->row(), $strArticle, $language);
 			}
 		}
 
