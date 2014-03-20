@@ -97,7 +97,7 @@ class PageError404 extends \Contao\PageError404
 			// see https://github.com/contao/core/issues/6785
 			// \Search::removeEntry(\Environment::get('request'));
 
-			\System::log(sprintf('Redirect %s → %s (%d) Referer: %s', $strAlias, $strUrl, $intStatus, $this->getReferer()), __METHOD__, TL_GENERAL);
+			\System::log(sprintf('Redirect %s → %s (%d) Referer: %s', ($strAlias!=''?$strAlias:\Environment::get('request')), $strUrl, $intStatus, $this->getReferer()), __METHOD__, TL_GENERAL);
 
 			$this->redirect($strUrl, $intStatus);
 		}

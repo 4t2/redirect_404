@@ -7,19 +7,21 @@ class tl_page_history extends Backend
 {
 	public function savePageAliasToHistory($varValue, \DataContainer $dc)
 	{
-		if (($dc->activeRecord->alias != '') && ($varValue != $dc->activeRecord->alias))
+		$strAlias = ($varValue ?: $dc->activeRecord->alias);
+
+		if ($strAlias != '')
 		{
 			$objPage = PageModel::findWithDetails($dc->activeRecord->id);
 
 			$objDatabase = \Database::getInstance();
 
 			$objResult = $objDatabase->prepare('SELECT `id` FROM `tl_page_history` WHERE `alias`=? AND `language`=? AND `dns`=?')
-									 ->execute($dc->activeRecord->alias, $objPage->language, $objPage->domain);
+									 ->execute($strAlias, $objPage->language, $objPage->domain);
 
 			if ($objResult->numRows == 0)
 			{
 				$objResult = $objDatabase->prepare('INSERT INTO `tl_page_history` (`pid`, `alias`, `language`, `dns`) VALUES (?, ?, ?, ?)')
-										 ->execute($objPage->id, $dc->activeRecord->alias, $objPage->language, $objPage->domain);
+										 ->execute($objPage->id, $strAlias, $objPage->language, $objPage->domain);
 			}
 		}
 
