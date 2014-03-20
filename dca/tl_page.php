@@ -7,21 +7,33 @@ class tl_page_history extends Backend
 {
 	public function savePageAliasToHistory($varValue, \DataContainer $dc)
 	{
-		$strAlias = ($varValue ?: $dc->activeRecord->alias);
-
-		if ($strAlias != '')
+		if ($dc->activeRecord->alias != $varValue || \Input::post('alias') == '')
 		{
+			$strAlias = $dc->activeRecord->alias;
+
 			$objPage = PageModel::findWithDetails($dc->activeRecord->id);
 
-			$objDatabase = \Database::getInstance();
-
-			$objResult = $objDatabase->prepare('SELECT `id` FROM `tl_page_history` WHERE `alias`=? AND `language`=? AND `dns`=?')
-									 ->execute($strAlias, $objPage->language, $objPage->domain);
-
-			if ($objResult->numRows == 0)
+			/**
+			 * auto generated alias bug
+			 * see https://github.com/contao/core/issues/6817
+			 */
+			if (\Input::post('alias') == '')
 			{
-				$objResult = $objDatabase->prepare('INSERT INTO `tl_page_history` (`pid`, `alias`, `language`, `dns`) VALUES (?, ?, ?, ?)')
-										 ->execute($objPage->id, $strAlias, $objPage->language, $objPage->domain);
+				$strAlias = $objPage->alias;
+			}
+
+			if ($strAlias != '')
+			{
+				$objDatabase = \Database::getInstance();
+
+				$objResult = $objDatabase->prepare('SELECT `id` FROM `tl_page_history` WHERE `alias`=? AND `language`=? AND `dns`=?')
+										 ->execute($strAlias, $objPage->language, $objPage->domain);
+
+				if ($objResult->numRows == 0)
+				{
+					$objResult = $objDatabase->prepare('INSERT INTO `tl_page_history` (`pid`, `alias`, `language`, `dns`) VALUES (?, ?, ?, ?)')
+											 ->execute($objPage->id, $strAlias, $objPage->language, $objPage->domain);
+				}
 			}
 		}
 
