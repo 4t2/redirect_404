@@ -17,7 +17,7 @@ class tl_page_history extends Backend
 			 * auto generated alias bug
 			 * see https://github.com/contao/core/issues/6817
 			 */
-			if (\Input::post('alias') == '')
+			if (version_compare(VERSION, '3.2.9', '<') && \Input::post('alias') == '')
 			{
 				$strAlias = $objPage->alias;
 			}

@@ -17,7 +17,7 @@ namespace Lingo\Redirect;
 
 class PageError404 extends \Contao\PageError404
 {
-	public function generate($pageId, $strDomain=null, $strHost=null, $blnUnusedGet=false)
+	public function generate($pageId, $strDomain=null, $strHost=null)
 	{
 		$strUrl = FALSE;
 		$intStatus = 301;
@@ -103,7 +103,7 @@ class PageError404 extends \Contao\PageError404
 		}
 		else
 		{
-			parent::generate($pageId, $strDomain, $strHost, $blnUnusedGet);
+			parent::generate($pageId, $strDomain, $strHost);
 		}
 	}
 
